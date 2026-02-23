@@ -10,7 +10,7 @@ def xhtml_to_json(xhtml_file, json_file):
     # Parse with BeautifulSoup
     soup = BeautifulSoup(content, 'html.parser')
     
-    result = {}
+    result = []
     
     # Find all entry divs of BOTH types
     for entry in soup.find_all('div', class_=['entry', 'minorentryvariant']):
@@ -56,8 +56,8 @@ def xhtml_to_json(xhtml_file, json_file):
                 # Convert back to string and replace double quotes with single quotes
                 processed_value = str(value_soup).replace('"', "'")
                 
-                # Add to result dictionary
-                result[headword] = processed_value
+                # Add to result list
+                result.append([headword, processed_value])
     
     # Write to JSON file
     with open(json_file, 'w', encoding='utf-8') as f:

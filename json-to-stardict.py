@@ -330,21 +330,19 @@ def create_stardict(json_file, dict_name):
     idx_file = os.path.join(output_dir, dict_name + '.idx')
     ifo_file = os.path.join(output_dir, dict_name + '.ifo')
     
-    # Read JSON data
+    # Read JSON data (list of [word, html] pairs)
     with open(json_file, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+        entries = json.load(f)
     
-    # Sort words alphabetically
-    sorted_words = sorted(data.keys())
+    # Sort entries alphabetically by word
+    entries.sort(key=lambda x: x[0])
     
     # Create .dict file (only definitions, no words)
     with open(dict_file, 'wb') as f_dict:
         current_offset = 0
         idx_data = []
         
-        for word in sorted_words:
-            # Get original HTML content
-            original_html = data[word]
+        for word, original_html in entries:
             
             # Apply CSS rules to HTML
             processed_html = apply_css_to_html(original_html)
@@ -376,7 +374,7 @@ def create_stardict(json_file, dict_name):
     with open(ifo_file, 'w', encoding='utf-8') as f_ifo:
         f_ifo.write("StarDict's dict ifo file\n")
         f_ifo.write("version=3.0.0\n")
-        f_ifo.write(f"wordcount={len(sorted_words)}\n")
+        f_ifo.write(f"wordcount={len(entries)}\n")
         f_ifo.write(f"idxfilesize={idx_file_size}\n")
         f_ifo.write(f"bookname={dict_name}\n")
         f_ifo.write("sametypesequence=h\n")
