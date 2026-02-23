@@ -1,0 +1,718 @@
+﻿.letHead{
+	-moz-column-count:1;
+	-webkit-column-count:1;
+	column-count:1;
+	clear:both;
+	width:100%;
+	text-align:left;
+	border-left-width:0pt;
+	border-right-width:0pt;
+	border-top-width:0pt;
+	border-bottom-width:3pt;
+	text-indent:-12pt;
+	margin-left:21pt;
+	line-height:1.5;
+	padding-bottom:12pt;
+	padding-top:24pt;
+}
+body{
+	font-size:10pt;
+}
+span[lang='en']{
+	font-family:'Noto Sans',serif;
+	font-size:11pt;
+}
+span[lang='si']{
+	font-family:'Noto Sans Sinhala',serif;
+	font-size:12pt;
+}
+.letter[lang='en']{
+	font-size:20pt;
+	font-weight:bold;
+}
+.letter[lang='si']{
+	font-size:20pt;
+	font-weight:bold;
+}
+a{
+	text-decoration:inherit;
+	color:inherit;
+}
+*[dir='ltr'], *[dir='rtl']{
+	unicode-bidi:isolate;
+	unicode-bidi:-ms-isolate;
+	unicode-bidi:-moz-isolate;
+}
+.entry{
+	clear:both;
+	white-space:pre-wrap;
+}
+.entry{
+	border-left-width:0.5pt;
+	border-right-width:0.5pt;
+	border-top-width:0.5pt;
+	border-bottom-width:0.5pt;
+	text-indent:-12pt;
+	margin-left:21pt;
+	line-height:1.5;
+	padding-bottom:2pt;
+	padding-top:1pt;
+}
+.entry span[lang='en']{
+	font-size:11pt;
+}
+.entry span[lang='si']{
+	font-size:12pt;
+}
+.entry .mainheadword> .mainheadwor+ .mainheadwor:before{
+	content:' ';
+}
+.entry .mainheadword> span:last-child:after{
+	content:' ';
+}
+.entry .mainheadword> span[lang='si']{
+	font-weight:bold;
+}
+.entry .mainheadword> span{
+	font-weight:bold;
+}
+.entry .mainheadword> span span[lang='en']{
+	font-weight:bold;
+}
+.entry .mainheadword> span span[lang='si']{
+	font-weight:bold;
+}
+.entry .variantformentrybackrefs> .variantformentrybackref + .variantformentrybackref:before{
+	content:',';
+}
+.entry .variantformentrybackrefs:before{
+	content:'(';
+}
+.entry .variantformentrybackrefs:after{
+	content:') ';
+}
+.entry .variantformentrybackrefs .headword> .headwor+ .headwor:before{
+	content:', ';
+}
+.entry .variantformentrybackrefs .headword> span:first-child:before{
+	content:' ';
+}
+.entry .senses > .sensecontent .sensenumber{
+	font-weight:bold;
+}
+.entry .senses > .sensecontent .sensenumber:after{
+	content:') ';
+}
+.entry .senses > .sensecontent + .sensecontent{
+	border-left-width:0.5pt;
+	border-right-width:0.5pt;
+	border-top-width:0.5pt;
+	border-bottom-width:0.5pt;
+	text-indent:-12pt;
+	margin-left:12pt;
+	line-height:1.5;
+	padding-bottom:2pt;
+	padding-top:0pt;
+	display:block;
+}
+.entry .senses span[lang='en']{
+	font-size:11pt;
+}
+.entry .senses span[lang='si']{
+	font-size:12pt;
+}
+.entry .senses .morphosyntaxanalysis:after{
+	content:'  ';
+}
+.entry .senses .morphosyntaxanalysis{
+	font-style:italic;
+}
+.entry .senses .morphosyntaxanalysis span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .morphosyntaxanalysis span[lang='si']{
+	font-style:italic;
+}
+.entry .senses .morphosyntaxanalysis .partofspeech> .partofspeec+ .partofspeec:before{
+	content:' ';
+}
+.entry .senses .morphosyntaxanalysis .morphtypes> .morphtype> .morphtype+ .morphtype:before{
+	content:' ';
+}
+.entry .senses .morphosyntaxanalysis .morphtypes:before{
+	content:' ';
+}
+.entry .senses .definitionorgloss> span+span[lang='si']:before{
+	content:' ';
+}
+.entry .senses .definitionorgloss> span[lang='en']{
+	font-weight:bold;
+}
+.entry .senses .definitionorgloss> span[lang='si']{
+	font-weight:bold;
+}
+.entry .senses .definitionorgloss> span{
+	font-weight:bold;
+}
+.entry .senses .definitionorgloss> span span[lang='en']{
+	font-weight:bold;
+}
+.entry .senses .definitionorgloss> span span[lang='si']{
+	font-weight:bold;
+}
+.entry .variantformentrybackrefs > .variantformentrybackref + .variantentrytypes:before{
+	content:', ';
+}
+.entry .variantformentrybackrefs .variantentrytypes .abbreviation-2> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.entry .variantformentrybackrefs .variantentrytypes .abbreviation-2> span[lang='en']{
+	font-style:italic;
+}
+.entry .variantformentrybackrefs .variantentrytypes .abbreviation-2> span{
+	font-style:italic;
+}
+.entry .variantformentrybackrefs .variantentrytypes .abbreviation-2> span span[lang='en']{
+	font-style:italic;
+}
+.entry .variantformentrybackrefs .variantentrytypes .abbreviation-2> span span[lang='si']{
+	font-style:italic;
+}
+.entry .senses .lexsensereferences> .lexsensereference + .lexsensereference:before{
+	content:'; ';
+}
+.entry .senses .lexsensereferences:before{
+	content:' [';
+}
+.entry .senses .lexsensereferences:after{
+	content:']';
+}
+.entry .senses .lexsensereferences .ownertype_abbreviation> .ownertype_abbreviatio+ .ownertype_abbreviatio:before{
+	content:' ';
+}
+.entry .senses .lexsensereferences .ownertype_abbreviation> span:last-child:after{
+	content:':';
+}
+.entry .senses .lexsensereferences .ownertype_abbreviation> span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .lexsensereferences .ownertype_abbreviation> span{
+	font-style:italic;
+}
+.entry .senses .lexsensereferences .ownertype_abbreviation> span span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .lexsensereferences .ownertype_abbreviation> span span[lang='si']{
+	font-style:italic;
+}
+.minorentryvariant{
+	clear:both;
+	white-space:pre-wrap;
+}
+.minorentryvariant{
+	border-left-width:0.5pt;
+	border-right-width:0.5pt;
+	border-top-width:0.5pt;
+	border-bottom-width:0.5pt;
+	text-indent:-12pt;
+	margin-left:21pt;
+	line-height:1.5;
+	padding-bottom:2pt;
+	padding-top:0pt;
+}
+.minorentryvariant span[lang='en']{
+	font-size:11pt;
+}
+.minorentryvariant span[lang='si']{
+	font-size:12pt;
+}
+.minorentryvariant .headword-2> .headwor+ .headwor:before{
+	content:' ';
+}
+.minorentryvariant .headword-2> span:last-child:after{
+	content:' ≻';
+}
+.minorentryvariant .headword-2> span[lang='si']{
+	font-weight:bold;
+}
+.minorentryvariant .headword-2> span{
+	font-weight:bold;
+}
+.minorentryvariant .headword-2> span span[lang='en']{
+	font-weight:bold;
+}
+.minorentryvariant .headword-2> span span[lang='si']{
+	font-weight:bold;
+}
+.entry .senses .usages> .usage + .usage:before{
+	content:', ';
+}
+.entry .senses .usages:before{
+	content:'{';
+}
+.entry .senses .usages:after{
+	content:'} ';
+}
+.entry .senses .usages .abbreviation-3> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs> .visiblevariantentryref + .visiblevariantentryref:before{
+	content:', ';
+}
+.minorentryvariant .visiblevariantentryrefs:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs:after{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries> .referencedentry + .referencedentry:before{
+	content:', ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .headword-3> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .senses .lexsensereferences .configtargets> .configtarget + .configtarget:before{
+	content:', ';
+}
+.entry .senses .lexsensereferences .configtargets:before{
+	content:' ';
+}
+.entry .senses .lexsensereferences .configtargets .headword-4> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .visiblecomplexformbackrefs> .visiblecomplexformbackref + .visiblecomplexformbackref:before{
+	content:', ';
+}
+.entry .visiblecomplexformbackrefs:before{
+	content:' (';
+}
+.entry .visiblecomplexformbackrefs:after{
+	content:')';
+}
+.entry .visiblecomplexformbackrefs .headword-5> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .visiblecomplexformbackrefs .headword-5> span:first-child:before{
+	content:' ';
+}
+.entry .visiblecomplexformbackrefs > .visiblecomplexformbackref + .complexformtypes:before{
+	content:', ';
+}
+.entry .visiblecomplexformbackrefs .complexformtypes .abbreviation-4> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs > .visiblevariantentryref + .variantentrytypes-2:before{
+	content:', ';
+}
+.minorentryvariant .visiblevariantentryrefs .variantentrytypes-2 .reversename> .reversenam+ .reversenam:before{
+	content:' ';
+}
+.entry .senses .examplescontents .examplescontent span[lang='en']{
+	font-size:11pt;
+}
+.entry .senses .examplescontents .examplescontent span[lang='si']{
+	font-size:12pt;
+}
+.entry .senses .examplescontents .examplescontent{
+	border-left-width:0.5pt;
+	border-right-width:0.5pt;
+	border-top-width:0.5pt;
+	border-bottom-width:0.5pt;
+	text-indent:-9.071pt;
+	flex-line-height:12pt;
+	line-height:12pt;
+	padding-bottom:0pt;
+	padding-top:3pt;
+	margin-left:24.921pt;
+	display:block;
+}
+.entry .senses .examplescontents .examplescontent{
+	border-left-width:0.5pt;
+	border-right-width:0.5pt;
+	border-top-width:0.5pt;
+	border-bottom-width:0.5pt;
+	text-indent:-9.071pt;
+	margin-left:12.921pt;
+	flex-line-height:12pt;
+	line-height:12pt;
+	padding-bottom:0pt;
+	padding-top:3pt;
+	display:block;
+}
+.entry .senses .examplescontents .examplescontent:before{
+	content:'\2022';
+	font-size:10pt;
+	color:Black;
+}
+.entry .senses .examplescontents .example> .exampl+ .exampl:before{
+	content:' ';
+}
+.entry .senses .examplescontents .example> span[lang='si']{
+	font-style:italic;
+}
+.entry .senses .examplescontents .example> span{
+	font-style:italic;
+}
+.entry .senses .examplescontents .example> span span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .examplescontents .example> span span[lang='si']{
+	font-style:italic;
+}
+.entry .senses .examplescontents .translationcontents:before{
+	content:' ';
+}
+.entry .senses .examplescontents .translationcontents .translation> span:first-child:before{
+	content:' ';
+}
+.entry .senses .examplescontents .translationcontents .translation> span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .examplescontents .translationcontents .translation> span{
+	font-style:italic;
+}
+.entry .senses .examplescontents .translationcontents .translation> span span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .examplescontents .translationcontents .translation> span span[lang='si']{
+	font-style:italic;
+}
+.entry .minimallexreferences> .minimallexreference + .minimallexreference:before{
+	content:'; ';
+}
+.entry .minimallexreferences:before{
+	content:' [';
+}
+.entry .minimallexreferences:after{
+	content:'.]';
+}
+.entry .minimallexreferences .ownertype_abbreviation-2> .ownertype_abbreviatio+ .ownertype_abbreviatio:before{
+	content:' ';
+}
+.entry .minimallexreferences .ownertype_abbreviation-2> span:last-child:after{
+	content:':';
+}
+.entry .minimallexreferences .ownertype_abbreviation-2> span[lang='en']{
+	font-style:italic;
+}
+.entry .minimallexreferences .ownertype_abbreviation-2> span{
+	font-style:italic;
+}
+.entry .minimallexreferences .ownertype_abbreviation-2> span span[lang='en']{
+	font-style:italic;
+}
+.entry .minimallexreferences .ownertype_abbreviation-2> span span[lang='si']{
+	font-style:italic;
+}
+.entry .minimallexreferences .configtargets-2> .configtarget + .configtarget:before{
+	content:', ';
+}
+.entry .minimallexreferences .configtargets-2:before{
+	content:' ';
+}
+.entry .minimallexreferences .configtargets-2 .headword-6> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .etymologies> .etymology + .etymology:before{
+	content:' ';
+}
+.entry .etymologies:before{
+	content:'(';
+}
+.entry .etymologies:after{
+	content:') ';
+}
+.entry .etymologies .languages> .language + .language:before{
+	content:', ';
+}
+.entry .etymologies .languages .abbreviation-5> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.entry .etymologies .form> .for+ .for:before{
+	content:' ';
+}
+.entry .etymologies .form> span:first-child:before{
+	content:' ';
+}
+.entry .complexformentryrefs> .complexformentryref + .complexformentryref:before{
+	content:', ';
+}
+.entry .complexformentryrefs:before{
+	content:'(';
+}
+.entry .complexformentryrefs:after{
+	content:') ';
+}
+.entry .complexformentryrefs .complexformtypes-2> .complexformtype + .complexformtype:before{
+	content:', ';
+}
+.entry .complexformentryrefs .complexformtypes-2 .reverseabbr> .reverseabb+ .reverseabb:before{
+	content:' ';
+}
+.entry .complexformentryrefs .referencedentries-2> .referencedentry + .referencedentry:before{
+	content:', ';
+}
+.entry .complexformentryrefs .referencedentries-2:before{
+	content:' ';
+}
+.entry .complexformentryrefs .referencedentries-2 .headword-7> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .senses .examplescontents .reference:before{
+	content:' [Source: ';
+}
+.entry .senses .examplescontents .reference:after{
+	content:']';
+}
+.entry .senses .source:before{
+	content:' [See: ';
+}
+.entry .senses .source:after{
+	content:']';
+}
+.entry .senses .dialectlabelsrs:before{
+	content:' [';
+}
+.entry .senses .dialectlabelsrs:after{
+	content:']';
+}
+.entry .senses .dialectlabelsrs .abbreviation-6> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.entry .literalmeaning> .literalmeanin+ .literalmeanin:before{
+	content:' ';
+}
+.entry .literalmeaning> span:first-child:before{
+	content:' [Literal: ';
+}
+.entry .literalmeaning> span:last-child:after{
+	content:']';
+}
+.entry .literalmeaning> span[lang='en']{
+	font-style:italic;
+}
+.entry .literalmeaning> span{
+	font-style:italic;
+}
+.entry .literalmeaning> span span[lang='en']{
+	font-style:italic;
+}
+.entry .literalmeaning> span span[lang='si']{
+	font-style:italic;
+}
+.entry .senses .scientificname:before{
+	content:' [';
+}
+.entry .senses .scientificname:after{
+	content:']';
+}
+.entry .senses .scientificname{
+	font-style:italic;
+}
+.entry .senses .scientificname span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .scientificname span[lang='si']{
+	font-style:italic;
+}
+.entry .comment> .commen+ .commen:before{
+	content:' ';
+}
+.entry .comment> span:first-child:before{
+	content:' Note: ';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs> .primaryentryref + .primaryentryref:before{
+	content:', ';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs:before{
+	content:' (';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs:after{
+	content:')';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs .entrytypes> .entrytype + .entrytype:before{
+	content:',';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs .entrytypes .reverseabbr-2> .reverseabb+ .reverseabb:before{
+	content:' ';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs .referencedentries-3> .referencedentry + .referencedentry:before{
+	content:',';
+}
+.entry .minimallexreferences .configtargets-2 .primaryentryrefs .referencedentries-3:before{
+	content:' ';
+}
+.entry .senses .sensetype:before{
+	content:'(';
+}
+.entry .senses .sensetype:after{
+	content:') ';
+}
+.entry .senses .sensetype{
+	font-style:italic;
+}
+.entry .senses .sensetype span[lang='en']{
+	font-style:italic;
+}
+.entry .senses .sensetype span[lang='si']{
+	font-style:italic;
+}
+.entry .senses .sensetype .abbreviation-7> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.entry .senses .visiblecomplexformbackrefs-2> .visiblecomplexformbackref + .visiblecomplexformbackref:before{
+	content:', ';
+}
+.entry .senses .visiblecomplexformbackrefs-2:before{
+	content:' [';
+}
+.entry .senses .visiblecomplexformbackrefs-2:after{
+	content:']';
+}
+.entry .senses .visiblecomplexformbackrefs-2 .headword-9> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .senses .visiblecomplexformbackrefs-2 .headword-9> span:first-child:before{
+	content:' ';
+}
+.entry .senses .visiblecomplexformbackrefs-2 .visiblecomplexformbackrefs > .visiblecomplexformbackref + .complexformtypes-3:before{
+	content:', ';
+}
+.entry .senses .visiblecomplexformbackrefs-2 .complexformtypes-3 .abbreviation-8> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2> .primaryentryref + .primaryentryref:before{
+	content:', ';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2:before{
+	content:' (';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2:after{
+	content:')';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2 .entrytypes-2> .entrytype + .entrytype:before{
+	content:',';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2 .entrytypes-2 .reverseabbr-3> .reverseabb+ .reverseabb:before{
+	content:' ';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2 .referencedentries-4> .referencedentry + .referencedentry:before{
+	content:', ';
+}
+.entry .complexformentryrefs .referencedentries-2 .primaryentryrefs-2 .referencedentries-4:before{
+	content:' ';
+}
+.minorentryvariant .variantformentrybackrefs-2> .variantformentrybackref + .variantformentrybackref:before{
+	content:';';
+}
+.minorentryvariant .variantformentrybackrefs-2:before{
+	content:'(';
+}
+.minorentryvariant .variantformentrybackrefs-2:after{
+	content:') ';
+}
+.minorentryvariant .variantformentrybackrefs-2 .headword-11> .headwor+ .headwor:before{
+	content:', ';
+}
+.minorentryvariant .variantformentrybackrefs-2 .headword-11> span:first-child:before{
+	content:' ';
+}
+.minorentryvariant .variantformentrybackrefs-2 .variantformentrybackrefs > .variantformentrybackref + .variantentrytypes-3:before{
+	content:', ';
+}
+.minorentryvariant .variantformentrybackrefs-2 .variantentrytypes-3 .abbreviation-9> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.minorentryvariant .visiblecomplexformbackrefs-3> .visiblecomplexformbackref + .visiblecomplexformbackref:before{
+	content:', ';
+}
+.minorentryvariant .visiblecomplexformbackrefs-3:before{
+	content:'  ';
+}
+.minorentryvariant .visiblecomplexformbackrefs-3 .headword-12> .headwor+ .headwor:before{
+	content:' ';
+}
+.minorentryvariant .visiblecomplexformbackrefs-3 .headword-12> span:first-child:before{
+	content:' ';
+}
+.minorentryvariant .visiblecomplexformbackrefs-3 .visiblecomplexformbackrefs > .visiblecomplexformbackref + .complexformtypes-4:before{
+	content:', ';
+}
+.minorentryvariant .visiblecomplexformbackrefs-3 .complexformtypes-4 .abbreviation-10> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3> .primaryentryref + .primaryentryref:before{
+	content:', ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3:before{
+	content:' (';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3:after{
+	content:')';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3 .entrytypes-3> .entrytype + .entrytype:before{
+	content:',';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3 .entrytypes-3 .reverseabbr-4> .reverseabb+ .reverseabb:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3 .referencedentries-5> .referencedentry + .referencedentry:before{
+	content:', ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .primaryentryrefs-3 .referencedentries-5:before{
+	content:' ';
+}
+.entry .senses .variantformentrybackrefs-3> .variantformentrybackref + .variantformentrybackref:before{
+	content:';';
+}
+.entry .senses .variantformentrybackrefs-3:before{
+	content:' (';
+}
+.entry .senses .variantformentrybackrefs-3:after{
+	content:')';
+}
+.entry .senses .variantformentrybackrefs-3 .headword-14> .headwor+ .headwor:before{
+	content:', ';
+}
+.entry .senses .variantformentrybackrefs-3 .headword-14> span:first-child:before{
+	content:' ';
+}
+.entry .senses .variantformentrybackrefs-3 .variantformentrybackrefs > .variantformentrybackref + .variantentrytypes-4:before{
+	content:', ';
+}
+.entry .senses .variantformentrybackrefs-3 .variantentrytypes-4 .abbreviation-11> .abbreviatio+ .abbreviatio:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .glossorsummary> .glossorsummar+ .glossorsummar:before{
+	content:' ';
+}
+.minorentryvariant .visiblevariantentryrefs .referencedentries .glossorsummary> span:first-child:before{
+	content:' ';
+}
+.entry .tables:before{
+	content:' ';
+}
+.entry .visiblevariantentryrefs-2> .visiblevariantentryref + .visiblevariantentryref:before{
+	content:', ';
+}
+.entry .visiblevariantentryrefs-2:after{
+	content:' ';
+}
+.entry .visiblevariantentryrefs-2 .referencedentries-6> .referencedentry + .referencedentry:before{
+	content:', ';
+}
+.entry .visiblevariantentryrefs-2 .referencedentries-6:before{
+	content:' ';
+}
+.entry .visiblevariantentryrefs-2 .referencedentries-6 .headword-15> .headwor+ .headwor:before{
+	content:' ';
+}
+.entry .visiblevariantentryrefs-2 .visiblevariantentryrefs > .visiblevariantentryref + .variantentrytypes-5:before{
+	content:', ';
+}
+.entry .visiblevariantentryrefs-2 .variantentrytypes-5 .reverseabbr-5> .reverseabb+ .reverseabb:before{
+	content:' ';
+}
