@@ -43,6 +43,15 @@ def apply_css_to_html(html_content):
         if element.contents:
             element.append(') ')
     
+    # Convert second-and-subsequent sensecontent spans to divs for line breaks
+    # This mirrors the CSS rule: .sensecontent + .sensecontent { display: block }
+    senses_containers = soup.find_all(class_='senses')
+    for senses_container in senses_containers:
+        sensecontents = senses_container.find_all(class_='sensecontent', recursive=False)
+        for i, sc in enumerate(sensecontents):
+            if i > 0:
+                sc.name = 'div'
+    
     # Handle usages
     for element in soup.find_all(class_='usages'):
         if element.contents:
