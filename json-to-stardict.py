@@ -91,10 +91,17 @@ def apply_css_to_html(html_content):
             element.insert(0, ' [')
             element.append(']')
     
-    # Handle examplescontent
+    # Convert examplescontents spans to <ul> tags
+    for element in soup.find_all(class_='examplescontents'):
+        element.name = 'ul'
+    
+    # Convert examplescontent spans to <li> tags
     for element in soup.find_all(class_='examplescontent'):
-        if element.contents:
-            element.insert(0, '• ')
+        element.name = 'li'
+    
+    # Add a space before translationcontents so example and translation are separated
+    for element in soup.find_all(class_='translationcontents'):
+        element.insert(0, ' ')
     
     # Handle adjacent sibling selectors for commas and spaces
     handle_adjacent_sibling_selectors(soup)
