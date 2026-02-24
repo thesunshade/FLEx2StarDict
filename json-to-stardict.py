@@ -31,6 +31,25 @@ def apply_css_to_html(html_content):
         # Add the strong_tag to the element
         element.append(strong_tag)
     
+    # Handle minorentryvariant specific symbol ( ≻)
+    for mev in soup.find_all(class_='minorentryvariant'):
+        hw2 = mev.find(class_='headword-2')
+        if hw2:
+            # Find the last span to add the symbol after it
+            last_span = hw2.find_all('span')[-1] if hw2.find_all('span') else None
+            if last_span:
+                last_span.append(' ≻')
+            else:
+                hw2.append(' ≻')
+    
+    # Handle visiblevariantentryrefs before/after spaces
+    for vvr in soup.find_all(class_='visiblevariantentryrefs'):
+        vvr.insert(0, ' ')
+        vvr.append(' ')
+        # referencedentries within visiblevariantentryrefs also has a before space
+        for re_entries in vvr.find_all(class_='referencedentries'):
+            re_entries.insert(0, ' ')
+    
     # Apply before and after content based on specific patterns
     # Handle lexsensereferences
     for element in soup.find_all(class_='lexsensereferences'):
@@ -203,6 +222,24 @@ def handle_adjacent_sibling_selectors(soup):
     for i, complexformentryref in enumerate(complexformentryrefs):
         if i > 0 and complexformentryrefs[i-1].parent == complexformentryref.parent:
             complexformentryref.insert(0, ', ')
+    
+    # Handle .visiblevariantentryref + .visiblevariantentryref:before (content: ', ')
+    vvers = soup.find_all(class_=re.compile(r'visiblevariantentryref'))
+    for i, vver in enumerate(vvers):
+        if i > 0 and vvers[i-1].parent == vver.parent:
+            vver.insert(0, ', ')
+    
+    # Handle .visiblevariantentryref + .variantentrytypes-2:before (content: ', ')
+    # AND similar cases where entry types follow references
+    vvr_containers = soup.find_all(class_='visiblevariantentryrefs')
+    for container in vvr_containers:
+        children = [c for c in container.children if hasattr(c, 'get')]
+        for i, child in enumerate(children):
+            if i > 0:
+                classes = child.get('class', [])
+                prev_classes = children[i-1].get('class', [])
+                if any('variantentrytypes' in c for c in classes) and any('visiblevariantentryref' in c for c in prev_classes):
+                    child.insert(0, ', ')
     
     # Handle .variantformentrybackref + .variantformentrybackref:before (content: ', ')
     # Only add comma if previous sibling is also a variantformentrybackref

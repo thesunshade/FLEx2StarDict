@@ -1,5 +1,6 @@
 import json
 import sys
+import re
 from bs4 import BeautifulSoup
 
 def xhtml_to_json(xhtml_file, json_file):
@@ -14,8 +15,8 @@ def xhtml_to_json(xhtml_file, json_file):
     
     # Find all entry divs of BOTH types
     for entry in soup.find_all('div', class_=['entry', 'minorentryvariant']):
-        # Extract headword by looking for EITHER class name
-        headword_span = entry.find('span', class_=['mainheadword', 'headword'])
+        # Extract headword by looking for elements where class contains 'headword' or 'mainheadword'
+        headword_span = entry.find('span', class_=re.compile(r'headword|mainheadword'))
         if headword_span:
             a_tag = headword_span.find('a')
             if a_tag and a_tag.text:
