@@ -1,1 +1,2 @@
 - [] make sure that Literal, Source, See with bracktes is converted into text.
+- [] fix missing space after part of speech, eg in පෙනෙනවා
