@@ -99,6 +99,9 @@ def apply_css_content(soup, css_rules):
     Only the last rule that matches a specific element and side (before/after)
     is applied, simulating standard CSS behavior.
     """
+    if not css_rules:
+        return
+
     # Track the best (last) rule for each element and side
     # key: (id(el), side), value: content
     best_matches = {}
@@ -108,19 +111,68 @@ def apply_css_content(soup, css_rules):
             elements = soup.select(selector)
             for el in elements:
                 best_matches[(id(el), side)] = (el, content)
-        except Exception as e:
-            # Some complex selectors might fail BS4's selector engine
+        except Exception:
             pass
 
     # Apply the best matches
-    # We sort by el position in the tree if needed, but since we are inserting
-    # into the el itself, the order of elements doesn't matter, only the side.
-    # However, to avoid issues with parent/child both having rules, we just apply them.
     for (el_id, side), (el, content) in best_matches.items():
         if side == 'before':
             el.insert(0, content)
         else:
             el.append(content)
+
+def format_html(soup):
+    """
+    Applies styling (bold/italic) and layout (lists/divs) transformations
+    previously handled by json-to-stardict.py.
+    """
+    # Use direct name modification for cleaner HTML and better reliability
+    
+    # Italic classes -> <em>
+    italic_classes = re.compile(r'morphosyntaxanalysis|scientificname|sensetype|abbreviation|translation|example')
+    for el in soup.find_all(class_=italic_classes):
+        el.name = 'em'
+    
+    # Bold classes -> <strong>
+    bold_classes = re.compile(r'mainheadword|headword|letter|sensenumber')
+    for el in soup.find_all(class_=bold_classes):
+        el.name = 'strong'
+
+    # Convert sensecontent spans (except first) to divs for line breaks
+    for container in soup.find_all(class_='senses'):
+        sensecontents = container.find_all(class_='sensecontent', recursive=False)
+        for i, sc in enumerate(sensecontents):
+            if i > 0:
+                sc.name = 'div'
+
+    # Convert examplescontents to <ul> and examplescontent to <li>
+    for ex_contents in soup.find_all(class_='examplescontents'):
+        ex_contents.name = 'ul'
+    for ex_content in soup.find_all(class_='examplescontent'):
+        ex_content.name = 'li'
+    
+    # Add space after translationcontents
+    for tc in soup.find_all(class_='translationcontents'):
+        if not any(isinstance(c, str) and c.startswith(' ') for c in tc.contents):
+            tc.insert(0, ' ')
+    
+    # Add space after partofspeech
+    for pos in soup.find_all(class_='partofspeech'):
+        leaf = pos
+        while leaf.find():
+            children = leaf.find_all(recursive=False)
+            if children: leaf = children[-1]
+            else: break
+        text = leaf.get_text()
+        if text and not text.endswith(' '):
+            leaf.append(' ')
+            
+    # Add spaces around visiblevariantentryrefs
+    for vvr in soup.find_all(class_='visiblevariantentryrefs'):
+        if not any(isinstance(c, str) and c.startswith(' ') for c in vvr.contents):
+            vvr.insert(0, ' ')
+        if not vvr.get_text().endswith(' '):
+            vvr.append(' ')
 
 def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     # Read the XHTML file
@@ -140,6 +192,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     css_path = xhtml_file.rsplit('.', 1)[0] + '.css'
     css_rules = parse_css_rules(css_path, html_classes)
     apply_css_content(soup, css_rules)
+    format_html(soup)
     
     # Get abbreviation mapping if lists.xml is provided
     abbr_mapping = {}
@@ -164,7 +217,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     # Second pass: Process entries and collect variations
     for entry in entries:
         # Extract headword
-        headword_span = entry.find('span', class_=re.compile(r'headword|mainheadword'))
+        headword_span = entry.find(class_=re.compile(r'headword|mainheadword'))
         if not headword_span:
             continue
             
@@ -176,6 +229,8 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         else:
             headword = a_tag.text.strip()
             
+        print(f"\rParsing XHTML: {headword[:40]}...", end='', flush=True)
+
         # Get all content after the headword span
         value = ""
         found_headword = False
@@ -201,11 +256,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         result.append([headword, processed_value])
 
         # Find variations within this entry (original soup for logic, but output uses synthesized)
-        # Structure: <span class="variantformentrybackrefs">
-        #   <span class="variantentrytypes"> <span class="variantentrytype"> <span class="abbreviation-2"> pst. </span> </span> </span>
-        #   <span class="variantformentrybackref"> <span class="headword"> <span lang="si"> <a href="..."> ඇඬුවා </a> </span> </span> </span>
-        # </span>
-        variant_refs = entry.find_all('span', class_='variantformentrybackrefs')
+        variant_refs = entry.find_all(class_='variantformentrybackrefs')
         for vref in variant_refs:
             # We need to find pairs of (abbreviation, variant_headword)
             # A single abbreviation may apply to multiple headwords that follow it.
@@ -224,7 +275,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
                     if not current_abbr or current_abbr not in abbr_mapping:
                         continue
                         
-                    v_hw = child.find('span', class_='headword')
+                    v_hw = child.find(class_='headword')
                     if not v_hw:
                         continue
                         
@@ -241,6 +292,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
 
     # Add synthesized entries to result
     for v_text, labels in synthesized_entries.items():
+        print(f"\rSynthesizing variants: {v_text[:40]}...", end='', flush=True)
         # Combine multiple labels if necessary
         combined_label = ", ".join(labels)
         # Create a simple minor-entry-like HTML
@@ -249,7 +301,9 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         # We should apply CSS content to these too for consistency if they match rules.
         v_soup = BeautifulSoup(html, 'html.parser').div
         apply_css_content(v_soup, css_rules)
+        format_html(v_soup)
         result.append([v_text, str(v_soup).replace('"', "'")])
+    print() # New line after finishing variation loop
 
     # Write to JSON file
     with open(json_file, 'w', encoding='utf-8') as f:
