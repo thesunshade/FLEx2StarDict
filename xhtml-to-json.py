@@ -185,81 +185,54 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     # Extract all classes in the HTML for fuzzy matching in CSS
     html_classes = set()
     for tag in soup.find_all(class_=True):
-        for cls in tag['class']:
-            html_classes.add(cls)
+        if isinstance(tag['class'], list):
+            for cls in tag['class']:
+                html_classes.add(cls)
+        else:
+            html_classes.add(tag['class'])
 
-    # Load CSS rules and apply once to the whole soup
+    # Load CSS rules
     css_path = xhtml_file.rsplit('.', 1)[0] + '.css'
     css_rules = parse_css_rules(css_path, html_classes)
-    apply_css_content(soup, css_rules)
-    format_html(soup)
-    
+
     # Get abbreviation mapping if lists.xml is provided
     abbr_mapping = {}
     if lists_xml_file:
         abbr_mapping = get_abbreviation_mapping(lists_xml_file)
     
-    # First pass: Collect all existing headwords
+    # First pass: Collect all existing headwords (from raw soup)
     existing_headwords = set()
     entries = soup.find_all('div', class_=['entry', 'minorentryvariant'])
     for entry in entries:
-        headword_span = entry.find('span', class_=re.compile(r'headword|mainheadword'))
-        if headword_span:
-            a_tag = headword_span.find('a')
-            if a_tag and a_tag.text:
-                existing_headwords.add(a_tag.text.strip())
-            elif headword_span.text:
-                existing_headwords.add(headword_span.text.strip())
+        # Tag-agnostic search for headword
+        headword_el = entry.find(class_=re.compile(r'headword|mainheadword'))
+        if headword_el:
+            a_tag = headword_el.find('a')
+            if a_tag and a_tag.get_text():
+                existing_headwords.add(a_tag.get_text().strip())
+            elif headword_el.get_text():
+                existing_headwords.add(headword_el.get_text().strip())
     
-    result = []
     synthesized_entries = {} # headword -> list of "ReverseName Headword" strings
 
-    # Second pass: Process entries and collect variations
+    # Second pass: Collect variations (from raw soup)
     for entry in entries:
-        # Extract headword
-        headword_span = entry.find(class_=re.compile(r'headword|mainheadword'))
-        if not headword_span:
+        # Extract headword for referencing in the ReverseName
+        headword_el = entry.find(class_=re.compile(r'headword|mainheadword'))
+        if not headword_el:
             continue
             
-        a_tag = headword_span.find('a')
-        if not (a_tag and a_tag.text):
-            if not headword_span.text:
+        a_tag = headword_el.find('a')
+        if not (a_tag and a_tag.get_text()):
+            if not headword_el.get_text():
                 continue
-            headword = headword_span.text.strip()
+            headword = headword_el.get_text().strip()
         else:
-            headword = a_tag.text.strip()
+            headword = a_tag.get_text().strip()
             
-        print(f"\rParsing XHTML: {headword[:40]}...", end='', flush=True)
-
-        # Get all content after the headword span
-        value = ""
-        found_headword = False
-        for child in entry.children:
-            if child == headword_span:
-                found_headword = True
-                continue
-            if found_headword:
-                value += str(child)
-        
-        # Process the HTML:
-        value = value.replace('"', "'")
-        value = ' '.join(value.split())
-        value_soup = BeautifulSoup(value, 'html.parser')
-        
-        # Remove internal links
-        for a in value_soup.find_all('a'):
-            href = a.get('href', '')
-            if href.startswith('#'):
-                a.replace_with(a.text)
-        
-        processed_value = str(value_soup).replace('"', "'")
-        result.append([headword, processed_value])
-
-        # Find variations within this entry (original soup for logic, but output uses synthesized)
+        # Find variations within this entry
         variant_refs = entry.find_all(class_='variantformentrybackrefs')
         for vref in variant_refs:
-            # We need to find pairs of (abbreviation, variant_headword)
-            # A single abbreviation may apply to multiple headwords that follow it.
             current_abbr = None
             for child in vref.children:
                 if not hasattr(child, 'get'):
@@ -267,9 +240,10 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
                 classes = child.get('class', [])
                 if 'variantentrytypes' in classes:
                     # Update current abbreviation
-                    abbr_span = child.find('span', class_=re.compile(r'abbreviation'))
-                    if abbr_span:
-                        current_abbr = abbr_span.get_text().strip()
+                    # Tag-agnostic search for abbreviation
+                    abbr_el = child.find(class_=re.compile(r'abbreviation'))
+                    if abbr_el:
+                        current_abbr = abbr_el.get_text().strip()
                 elif 'variantformentrybackref' in classes:
                     # Found a variant headword, use current abbreviation
                     if not current_abbr or current_abbr not in abbr_mapping:
@@ -290,6 +264,55 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
                     if entry_text not in synthesized_entries[v_text]:
                         synthesized_entries[v_text].append(entry_text)
 
+    # Now apply formatting transformations to the entire soup
+    apply_css_content(soup, css_rules)
+    format_html(soup)
+    
+    result = []
+    
+    # Third pass: Build the final list of entries from formatted soup
+    formatted_entries = soup.find_all('div', class_=['entry', 'minorentryvariant'])
+    for entry in formatted_entries:
+        # Extract headword from formatted entry
+        headword_el = entry.find(class_=re.compile(r'headword|mainheadword'))
+        if not headword_el:
+            continue
+            
+        # It might be in a <strong> now, but the text is still there
+        a_tag = headword_el.find('a')
+        if not (a_tag and a_tag.get_text()):
+            if not headword_el.get_text():
+                continue
+            headword = headword_el.get_text().strip()
+        else:
+            headword = a_tag.get_text().strip()
+            
+        print(f"\rBuilding JSON: {headword[:40]}...", end='', flush=True)
+
+        # Get all content after the headword element
+        value = ""
+        found_headword = False
+        for child in entry.children:
+            if child == headword_el:
+                found_headword = True
+                continue
+            if found_headword:
+                value += str(child)
+        
+        # Process the HTML:
+        value = value.replace('"', "'")
+        value = ' '.join(value.split())
+        value_soup = BeautifulSoup(value, 'html.parser')
+        
+        # Remove internal links
+        for a in value_soup.find_all('a'):
+            href = a.get('href', '')
+            if href.startswith('#'):
+                a.replace_with(a.text)
+        
+        processed_value = str(value_soup).replace('"', "'")
+        result.append([headword, processed_value])
+
     # Add synthesized entries to result
     for v_text, labels in synthesized_entries.items():
         print(f"\rSynthesizing variants: {v_text[:40]}...", end='', flush=True)
@@ -297,13 +320,14 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         combined_label = ", ".join(labels)
         # Create a simple minor-entry-like HTML
         html = f'<div class="minorentryvariant"><span class="headword-2"><span lang="si">{v_text}</span></span><span class="visiblevariantentryrefs"><span class="variantentrytypes-2"><span class="variantentrytype"><span class="reversename"><span lang="en">{combined_label}</span></span></span></span></span></div>'
-        # Note: Synthesized entries also technically have CSS content (e.g., ≻)
-        # We should apply CSS content to these too for consistency if they match rules.
+        
+        # Format synthesized entries
         v_soup = BeautifulSoup(html, 'html.parser').div
         apply_css_content(v_soup, css_rules)
         format_html(v_soup)
         result.append([v_text, str(v_soup).replace('"', "'")])
-    print() # New line after finishing variation loop
+    
+    print("\nFinish processing.")
 
     # Write to JSON file
     with open(json_file, 'w', encoding='utf-8') as f:
