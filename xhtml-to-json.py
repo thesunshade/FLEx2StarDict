@@ -150,6 +150,13 @@ def format_html(soup):
         ex_contents.name = 'ul'
     for ex_content in soup.find_all(class_='examplescontent'):
         ex_content.name = 'li'
+        # Remove any CSS-injected bullet text (e.g., '\2022' misrendered as control chars).
+        # Since these are now <li> elements, the browser provides bullets automatically.
+        from bs4 import NavigableString
+        for child in list(ex_content.children):
+            if isinstance(child, NavigableString) and child.strip():
+                child.extract()
+                break  # only the first non-empty text node is the injected bullet
     
     # Add space after translationcontents
     for tc in soup.find_all(class_='translationcontents'):
