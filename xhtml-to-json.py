@@ -33,6 +33,95 @@ def get_abbreviation_mapping(lists_xml_path):
                     mapping[abbr] = revname
     return mapping
 
+def parse_css_rules(css_path, html_classes):
+    """
+    Parses the CSS file to find all rules with 'content' property.
+    Returns a list of (selector, content, type) where type is 'before' or 'after'.
+    """
+    if not os.path.exists(css_path):
+        return []
+
+    with open(css_path, 'r', encoding='utf-8') as f:
+        css_text = f.read()
+
+    # Regex to find rules: selector { ... content: '...'; ... }
+    # Handles both single and double quotes, and optional semicolon
+    pattern = re.compile(r'([^{}]+)\s*\{\s*[^}]*?content\s*:\s*[\'"]([^\'"]*)[\'"][^}]*\}', re.MULTILINE | re.DOTALL)
+    
+    rules = []
+    for selector_raw, content in pattern.findall(css_text):
+        selectors = [s.strip() for s in selector_raw.split(',')]
+        for full_selector in selectors:
+            # Handle unicode escapes in content (e.g., \2022)
+            processed_content = content.encode().decode('unicode_escape') if '\\' in content else content
+            
+            # Identify type and clean selector
+            rule_type = None
+            clean_selector = full_selector
+            if ':before' in full_selector:
+                rule_type = 'before'
+                clean_selector = full_selector.replace(':before', '')
+            elif ':after' in full_selector:
+                rule_type = 'after'
+                clean_selector = full_selector.replace(':after', '')
+            
+            if not rule_type:
+                continue
+
+            # Handle FLEx class name truncation
+            # FLEx often truncates class names in CSS selectors (e.g., .literalmeanin instead of .literalmeaning)
+            # We'll try to match truncated classes in the selector to full classes found in the HTML.
+            words = re.split(r'([.#])', clean_selector)
+            new_words = []
+            for i, word in enumerate(words):
+                if i > 0 and words[i-1] == '.':
+                    # This is a class name. Try to find a match in html_classes
+                    class_name = re.match(r'^[a-zA-Z0-9_-]+', word)
+                    if class_name:
+                        cls = class_name.group(0)
+                        if cls not in html_classes:
+                            # Try prefix match
+                            matches = [h for h in html_classes if h.startswith(cls)]
+                            if matches:
+                                # Pick the most likely (the one closest in length)
+                                best_match = min(matches, key=lambda x: len(x))
+                                word = word.replace(cls, best_match, 1)
+                new_words.append(word)
+            
+            normalized_selector = "".join(new_words)
+            rules.append((normalized_selector, processed_content, rule_type))
+            
+    return rules
+
+def apply_css_content(soup, css_rules):
+    """
+    Applies CSS content rules by injecting NavigableStrings into the DOM.
+    Only the last rule that matches a specific element and side (before/after)
+    is applied, simulating standard CSS behavior.
+    """
+    # Track the best (last) rule for each element and side
+    # key: (id(el), side), value: content
+    best_matches = {}
+
+    for selector, content, side in css_rules:
+        try:
+            elements = soup.select(selector)
+            for el in elements:
+                best_matches[(id(el), side)] = (el, content)
+        except Exception as e:
+            # Some complex selectors might fail BS4's selector engine
+            pass
+
+    # Apply the best matches
+    # We sort by el position in the tree if needed, but since we are inserting
+    # into the el itself, the order of elements doesn't matter, only the side.
+    # However, to avoid issues with parent/child both having rules, we just apply them.
+    for (el_id, side), (el, content) in best_matches.items():
+        if side == 'before':
+            el.insert(0, content)
+        else:
+            el.append(content)
+
 def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     # Read the XHTML file
     with open(xhtml_file, 'r', encoding='utf-8') as f:
@@ -40,6 +129,17 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     
     # Parse with BeautifulSoup
     soup = BeautifulSoup(content, 'html.parser')
+    
+    # Extract all classes in the HTML for fuzzy matching in CSS
+    html_classes = set()
+    for tag in soup.find_all(class_=True):
+        for cls in tag['class']:
+            html_classes.add(cls)
+
+    # Load CSS rules and apply once to the whole soup
+    css_path = xhtml_file.rsplit('.', 1)[0] + '.css'
+    css_rules = parse_css_rules(css_path, html_classes)
+    apply_css_content(soup, css_rules)
     
     # Get abbreviation mapping if lists.xml is provided
     abbr_mapping = {}
@@ -70,7 +170,6 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
             
         a_tag = headword_span.find('a')
         if not (a_tag and a_tag.text):
-            # If no a-tag, use span text
             if not headword_span.text:
                 continue
             headword = headword_span.text.strip()
@@ -101,7 +200,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         processed_value = str(value_soup).replace('"', "'")
         result.append([headword, processed_value])
 
-        # Find variations within this entry
+        # Find variations within this entry (original soup for logic, but output uses synthesized)
         # Structure: <span class="variantformentrybackrefs">
         #   <span class="variantentrytypes"> <span class="variantentrytype"> <span class="abbreviation-2"> pst. </span> </span> </span>
         #   <span class="variantformentrybackref"> <span class="headword"> <span lang="si"> <a href="..."> ඇඬුවා </a> </span> </span> </span>
@@ -146,7 +245,11 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         combined_label = ", ".join(labels)
         # Create a simple minor-entry-like HTML
         html = f'<div class="minorentryvariant"><span class="headword-2"><span lang="si">{v_text}</span></span><span class="visiblevariantentryrefs"><span class="variantentrytypes-2"><span class="variantentrytype"><span class="reversename"><span lang="en">{combined_label}</span></span></span></span></span></div>'
-        result.append([v_text, html])
+        # Note: Synthesized entries also technically have CSS content (e.g., ≻)
+        # We should apply CSS content to these too for consistency if they match rules.
+        v_soup = BeautifulSoup(html, 'html.parser').div
+        apply_css_content(v_soup, css_rules)
+        result.append([v_text, str(v_soup).replace('"', "'")])
 
     # Write to JSON file
     with open(json_file, 'w', encoding='utf-8') as f:

@@ -6,6 +6,10 @@ import re
 import shutil
 from bs4 import BeautifulSoup
 
+# List of classes that should always have a space after their content
+# The user can add more classes here as needed.
+CLASSES_TO_ADD_SPACE_AFTER = ['partofspeech']
+
 def apply_css_to_html(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
     
@@ -304,6 +308,26 @@ def add_missing_spaces(soup):
             next_sibling = next_sibling.next_sibling
         if next_sibling and hasattr(next_sibling, 'get') and next_sibling.get('class') and 'senses' in next_sibling.get('class'):
             mlr.append(' ')
+
+    # Add spaces after classes specified in CLASSES_TO_ADD_SPACE_AFTER
+    for cls in CLASSES_TO_ADD_SPACE_AFTER:
+        elements = soup.find_all(class_=cls)
+        for el in elements:
+            # Find the actual leaf element inside if it's nested (like partofspeech > lang)
+            # or just use the element itself if it has no children.
+            leaf = el
+            while leaf.find():
+                # If it has children, we want to add the space to the last leaf child
+                # but only if it's a descendant.
+                children = leaf.find_all(recursive=False)
+                if children:
+                    leaf = children[-1]
+                else:
+                    break
+            
+            text = leaf.get_text()
+            if text and not text.endswith(' '):
+                leaf.append(' ')
 
 def add_colons_after_abbreviations(soup):
     # Add colons after ownertype_abbreviation elements in minimallexreferences
