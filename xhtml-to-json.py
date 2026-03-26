@@ -4,6 +4,10 @@ import re
 import os
 from bs4 import BeautifulSoup
 
+MINIMUM_ENTRY_WARNING = 7000
+COLOR_RED = "\033[91m"
+COLOR_RESET = "\033[0m"
+
 def get_abbreviation_mapping(lists_xml_path):
     """
     Parses lists.xml to create a mapping of abbreviations to their reverse names.
@@ -335,6 +339,16 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         result.append([v_text, str(v_soup).replace('"', "'")])
     
     print("\nFinish processing.")
+
+# Check entry count before writing to file
+    if len(result) < MINIMUM_ENTRY_WARNING:
+        print(f"\n{COLOR_RED}[WARNING] Only {len(result)} entries found.{COLOR_RESET}")
+        print(f"This is below the MINIMUM_ENTRY_WARNING threshold of {MINIMUM_ENTRY_WARNING}.")
+        confirm = input("The original export might be incorrect. Do you want to proceed? (y/n): ").lower()
+        if confirm != 'y':
+            print("Operation aborted by user.")
+            sys.exit(0)
+
 
     # Write to JSON file
     with open(json_file, 'w', encoding='utf-8') as f:
