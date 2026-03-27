@@ -9,9 +9,9 @@ COLOR_RED = "\033[91m"
 COLOR_RESET = "\033[0m"
 
 def get_abbreviation_mapping(lists_xml_path):
-    """Parses lists.xml. Fails if file is missing."""
+    """Parses lists.xml. Raises error and exits if file is missing."""
     if not lists_xml_path or not os.path.exists(lists_xml_path):
-        print(f"{COLOR_RED}Error: {lists_xml_path} not found. Variant synthesis requires this file.{COLOR_RESET}")
+        print(f"{COLOR_RED}Error: {lists_xml_path} not found. This file is required for variant synthesis.{COLOR_RESET}")
         sys.exit(1)
         
     with open(lists_xml_path, 'r', encoding='utf-8') as f:
@@ -33,7 +33,6 @@ def get_abbreviation_mapping(lists_xml_path):
     return mapping
 
 def parse_css_rules(css_path, html_classes):
-    """Parses CSS and handles FLEx's class name truncation."""
     if not os.path.exists(css_path):
         return []
     with open(css_path, 'r', encoding='utf-8') as f:
@@ -64,7 +63,6 @@ def parse_css_rules(css_path, html_classes):
     return rules
 
 def apply_css_content(soup, css_rules):
-    """Injects CSS :before/:after content into the DOM."""
     if not css_rules: return
     best_matches = {}
     for selector, content, side in css_rules:
@@ -78,7 +76,6 @@ def apply_css_content(soup, css_rules):
         else: el.append(content)
 
 def format_html(soup):
-    """Applies styling tags and layout transformations."""
     italic_classes = re.compile(r'morphosyntaxanalysis|scientificname|sensetype|abbreviation|translation|example')
     for el in soup.find_all(class_=italic_classes): el.name = 'em'
     bold_classes = re.compile(r'mainheadword|headword|letter|sensenumber')
@@ -123,25 +120,27 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     css_path = xhtml_file.rsplit('.', 1)[0] + '.css'
     css_rules = parse_css_rules(css_path, html_classes)
     abbr_mapping = get_abbreviation_mapping(lists_xml_file)
-    print(f"Loaded {len(abbr_mapping)} abbreviation mappings.")
 
-    # Pass 1: Collect existing headwords
-    existing_headwords = set()
-    entries = soup.find_all('div', class_=['entry', 'minorentryvariant'])
+    # Regex definitions for FLEx's versioned classes
     headword_regex = re.compile(r'headword|mainheadword')
-    
-    for entry in entries:
-        hw_el = entry.find(class_=headword_regex)
-        if hw_el:
-            text = hw_el.get_text().strip()
-            if text: existing_headwords.add(text)
-    
-    # Pass 2: Collect variations (Robust Regex Pass)
-    synthesized_entries = {}
     variant_ref_regex = re.compile(r'variantformentrybackrefs')
     variant_type_regex = re.compile(r'variantentrytypes')
     backref_regex = re.compile(r'variantformentrybackref')
 
+    # Pass 1: Collect existing headwords
+    existing_headwords = set()
+    entries = soup.find_all('div', class_=['entry', 'minorentryvariant'])
+    for entry in entries:
+        hw_el = entry.find(class_=headword_regex)
+        if hw_el:
+            text = hw_el.get_text().replace('≻', '').strip()
+            if text: existing_headwords.add(text)
+    
+    main_entries_count = len(existing_headwords)
+    print(f"Identified {main_entries_count} unique existing headwords.")
+
+    # Pass 2: Collect variations
+    synthesized_entries = {}
     for entry in entries:
         headword_el = entry.find(class_=headword_regex)
         if not headword_el: continue
@@ -159,7 +158,7 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
                 v_hw_el = ref_block.find(class_=headword_regex)
                 if not v_hw_el: continue
                 
-                v_text = v_hw_el.get_text().strip()
+                v_text = v_hw_el.get_text().replace('≻', '').strip()
                 if abbr_text in abbr_mapping and v_text not in existing_headwords:
                     rev_name = abbr_mapping[abbr_text]
                     entry_label = f"{rev_name} {main_hw_text}"
@@ -168,9 +167,12 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
                     if entry_label not in synthesized_entries[v_text]:
                         synthesized_entries[v_text].append(entry_label)
 
-    if not synthesized_entries:
-        print(f"{COLOR_RED}Error: No variants were synthesized. Check your XHTML structure or lists.xml mapping.{COLOR_RESET}")
+    variant_entries_count = len(synthesized_entries)
+    if variant_entries_count == 0:
+        print(f"{COLOR_RED}Error: No variants found in the second pass. Something has broken.{COLOR_RESET}")
         sys.exit(1)
+    
+    print(f"Synthesized {variant_entries_count} minor variant entries.")
 
     # Pass 3: Formatting and Final Construction
     apply_css_content(soup, css_rules)
@@ -181,10 +183,8 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
     for entry in formatted_entries:
         headword_el = entry.find(class_=headword_regex)
         if not headword_el: continue
-        headword = headword_el.get_text().strip()
+        headword = headword_el.get_text().replace('≻', '').strip()
         
-        print(f"\rBuilding JSON: {headword[:40]}...", end='', flush=True)
-
         value = ""
         found_headword = False
         for child in entry.children:
@@ -202,7 +202,6 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         result.append([headword, str(value_soup).replace('"', "'")])
 
     for v_text, labels in synthesized_entries.items():
-        print(f"\rSynthesizing variants: {v_text[:40]}...", end='', flush=True)
         combined_label = ", ".join(labels)
         html = f'<div class="minorentryvariant"><span class="headword-2"><span lang="si">{v_text}</span></span><span class="visiblevariantentryrefs"><span class="variantentrytypes-2"><span class="variantentrytype"><span class="reversename"><span lang="en">{combined_label}</span></span></span></span></span></div>'
         v_soup = BeautifulSoup(html, 'html.parser').div
@@ -210,11 +209,12 @@ def xhtml_to_json(xhtml_file, json_file, lists_xml_file=None):
         format_html(v_soup)
         result.append([v_text, str(v_soup).replace('"', "'")])
     
-    print("\nFinish processing.")
+    total_entries = len(result)
+    print(f"Total entries processed: {total_entries}")
 
-    if len(result) < MINIMUM_ENTRY_WARNING:
-        print(f"\n{COLOR_RED}[WARNING] Only {len(result)} entries found.{COLOR_RESET}")
-        confirm = input("Proceed? (y/n): ").lower()
+    if total_entries < MINIMUM_ENTRY_WARNING:
+        print(f"\n{COLOR_RED}[WARNING] Only {total_entries} entries found.{COLOR_RESET}")
+        confirm = input("Proceed anyway? (y/n): ").lower()
         if confirm != 'y': sys.exit(0)
 
     with open(json_file, 'w', encoding='utf-8') as f:
